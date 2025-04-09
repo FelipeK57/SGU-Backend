@@ -21,13 +21,14 @@ export const login = async (req: Request, res: Response) => {
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
+
   if (!isPasswordValid) {
     res.status(401).json({ message: "Usuario o contraseña incorrectos" });
     return;
   }
 
   if (!user.active) {
-    res.status(401).json({ message: "Usuario inactivo" });
+    res.status(401).json({ message: "Usuario deshabilitado" });
     return;
   }
 
