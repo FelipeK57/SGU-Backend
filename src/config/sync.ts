@@ -1,6 +1,7 @@
 // src/config/sync.ts
 import { sequelize } from "./db";
 import "../models/users.model";
+import "../models/passwordResetCode.model";
 
 const syncDatabase = async () => {
   try {
