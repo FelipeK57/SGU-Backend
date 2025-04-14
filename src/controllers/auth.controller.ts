@@ -82,7 +82,8 @@ export const sendCodeEmail = async (req: Request, res: Response) => {
     const user = await User.findOne({ where: { email } });
     if (!user) {
       res.status(401).json({
-        message: "Hay un problema con el correo, verifica que esté correcto",
+        message:
+          "No pudimos enviar el código, verifica que el correo esté correcto",
       });
       return;
     }
@@ -92,6 +93,14 @@ export const sendCodeEmail = async (req: Request, res: Response) => {
       return;
     }
 
+    const existingCode = await PasswordResetCode.findOne({
+      where: { email },
+    });
+
+    if (existingCode) {
+      await existingCode.destroy();
+    }
+
     const sixDigitCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = dayjs().add(5, "minute").toDate();
 
@@ -99,7 +108,7 @@ export const sendCodeEmail = async (req: Request, res: Response) => {
       from: `SGU Notificaciones ${process.env.GMAIL_USER as string}`,
       to: email,
       subject: "Código de recuperación",
-      text: `Tu código de recuperación es: ${sixDigitCode}, y expira en 5 minutos.`,
+      text: `Tu código de recuperación es: ${sixDigitCode}, recuerda que expira en 5 minutos.`,
     });
 
     await PasswordResetCode.create({
@@ -108,10 +117,15 @@ export const sendCodeEmail = async (req: Request, res: Response) => {
       expirationDate: expiresAt,
     });
 
-    res.status(200).json({ message: "Correo enviado" });
+    res.status(200).json({
+      message:
+        "El código ha sido enviado a tu correo electrónico, por favor revisa tu bandeja de entrada.",
+    });
+    return;
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error al enviar el correo" });
+    return;
   }
 };
 
@@ -130,15 +144,22 @@ export const validateCode = async (req: Request, res: Response) => {
 
     if (codeData) {
       if (dayjs().isAfter(dayjs(codeData.expirationDate))) {
-        res.status(401).json({ message: "Código expirado" });
+        res
+          .status(401)
+          .json({ message: "El código ha expirado. Solicita uno nuevo." });
         return;
       } else {
         await codeData.destroy();
-        res.status(200).json({ message: "Código válido" });
+        res.status(200).json({
+          message:
+            "El código es válido. Ahora puedes crear tu nueva contraseña.",
+        });
         return;
       }
     } else {
-      res.status(401).json({ message: "Código inválido" });
+      res
+        .status(401)
+        .json({ message: "El código no es válido. Intenta nuevamente." });
       return;
     }
   } catch (error) {
