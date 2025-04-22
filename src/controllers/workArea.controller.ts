@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import WorkArea from "../models/workArea.model";
 import { Op } from "sequelize";
 import { WorkAreaResponseDto } from "../dtos/workArea.dts";
+import User from "../models/users.model";
 
 export const createWorkArea = async (req: Request, res: Response) => {
   try {
@@ -108,9 +109,21 @@ export const deleteWorkArea = async (req: Request, res: Response) => {
       return;
     }
 
+    const userWithWorkArea = await User.findOne({ where: { workAreaId: id } });
+
+    if (userWithWorkArea) {
+      res
+        .status(409)
+        .json({
+          message:
+            "El área de trabajo no se puede eliminar porqué tiene usuarios asignados",
+        });
+      return;
+    }
+
     await workArea.destroy();
 
-    res.status(200).json({ message: "Área de trabajo eliminada" });
+    res.status(200).json({ message: "Área de trabajo eliminada exitosamente" });
   } catch (error) {
     res.status(500).json({ message: "Error al eliminar el área de trabajo" });
     return;
