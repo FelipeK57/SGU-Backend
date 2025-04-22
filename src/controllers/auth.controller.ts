@@ -19,14 +19,18 @@ export const login = async (req: Request, res: Response) => {
 
   const user = await User.findOne({ where: { email } });
   if (!user) {
-    res.status(401).json({ message: "Usuario o contraseña incorrectos" });
+    res
+      .status(401)
+      .json({ message: "Correo electrónico o contraseña incorrectos" });
     return;
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
 
   if (!isPasswordValid) {
-    res.status(401).json({ message: "Usuario o contraseña incorrectos" });
+    res
+      .status(401)
+      .json({ message: "Correo electrónico o contraseña incorrectos" });
     return;
   }
 
@@ -182,7 +186,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     { where: { email } }
   )
     .then(() => {
-      res.status(200).json({ message: "Contraseña actualizada" });
+      res.status(200).json({ message: "La contraseña ha sido actualizada correctamente" });
       return;
     })
     .catch((error) => {
@@ -190,4 +194,34 @@ export const resetPassword = async (req: Request, res: Response) => {
       res.status(500).json({ message: "Error al actualizar la contraseña" });
       return;
     });
+};
+
+export const validateCurrentPassword = async (req: Request, res: Response) => {
+  const { currentPassword, email } = req.body;
+
+  if (!currentPassword || !email) {
+    res.status(400).json({ message: "Faltan datos" });
+    return;
+  }
+
+  const user = await User.findOne({ where: { email: email } });
+
+  if (!user) {
+    res.status(401).json({ message: "No se encontró un usuario" });
+    return;
+  }
+
+  const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+
+  if (!isPasswordValid) {
+    res.status(401).json({
+      message: "La contraseña ingresada no es igual a la actual",
+    });
+    return;
+  }
+
+  res.status(200).json({
+    message: "La contraseña es valida, puede continuar con el cambio",
+  });
+  return;
 };
