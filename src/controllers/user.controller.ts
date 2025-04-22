@@ -2,10 +2,53 @@ import User from "../models/users.model";
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import { UserResponseDTO } from "../dtos/user.dto";
+import WorkArea from "../models/workArea.model";
+
+export const getUser = async (req: Request, res: Response) => {
+  const { email } = req.params;
+
+  if (!email) {
+    res.status(400).json({ message: "Faltan datos" });
+  }
+  try {
+    const user = (await User.findOne({
+      where: { email: email },
+      include: [
+        {
+          model: WorkArea,
+          as: "workArea",
+          attributes: ["name"],
+        },
+      ],
+    })) as User & { workArea: WorkArea };
+
+    if (!user) {
+      res
+        .status(404)
+        .json({ message: "No se encontro ningun usuario con este correo" });
+    }
+
+    res.status(200).json({
+      message: "Usuario encontrado",
+      user: {
+        id: user.id,
+        name: user.name,
+        lastName: user.lastName,
+        email: user.email,
+        documentType: user.documentType,
+        documentNumber: user.documentNumber,
+        workArea: user.workArea.name,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: error });
+  }
+};
 
 export const createUser = async (req: Request, res: Response) => {
   const {
     name,
+    workAreaId,
     lastName,
     documentType,
     documentNumber,
@@ -14,10 +57,9 @@ export const createUser = async (req: Request, res: Response) => {
     password,
   } = req.body;
 
-  console.log(req.body);
-
   if (
     !name ||
+    !workAreaId ||
     !lastName ||
     !documentType ||
     !documentNumber ||
@@ -51,8 +93,9 @@ export const createUser = async (req: Request, res: Response) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await User.create({
+    const user = await User.create({
       name,
+      workAreaId,
       lastName,
       documentType,
       documentNumber,
@@ -65,14 +108,15 @@ export const createUser = async (req: Request, res: Response) => {
     res.status(201).json({
       message: "Usuario creado",
       user: {
-        id: newUser.id,
-        name: newUser.name,
-        lastName: newUser.lastName,
-        documentType: newUser.documentType,
-        documentNumber: newUser.documentNumber,
-        role: newUser.role,
-        email: newUser.email,
-        active: newUser.active,
+        id: user.id,
+        name: user.name,
+        lastName: user.lastName,
+        documentType: user.documentType,
+        documentNumber: user.documentNumber,
+        role: user.role,
+        email: user.email,
+        active: user.active,
+        workArea: user.workAreaId,
       },
     });
     return;
@@ -84,9 +128,16 @@ export const createUser = async (req: Request, res: Response) => {
 
 export const getActiveUsers = async (req: Request, res: Response) => {
   try {
-    const users = await User.findAll({
+    const users = (await User.findAll({
       where: { active: true, role: "employee" },
-    });
+      include: [
+        {
+          model: WorkArea,
+          as: "workArea",
+          attributes: ["name"],
+        },
+      ],
+    })) as (User & { workArea: WorkArea })[];
     if (users.length === 0) {
       res.status(404).json({ message: "No hay usuarios activos" });
       return;
@@ -106,9 +157,17 @@ export const getActiveUsers = async (req: Request, res: Response) => {
 
 export const getInactiveUsers = async (req: Request, res: Response) => {
   try {
-    const users = await User.findAll({
+    const users = (await User.findAll({
       where: { active: false, role: "employee" },
-    });
+      include: [
+        {
+          model: WorkArea,
+          as: "workArea",
+          attributes: ["name"],
+        },
+      ],
+    })) as (User & { workArea: WorkArea })[];
+
     if (users.length === 0) {
       res.status(404).json({ message: "No hay usuarios inactivos" });
       return;
@@ -128,28 +187,38 @@ export const getInactiveUsers = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name, lastName, documentType, documentNumber, email } = req.body;
+  const { name, workArea, lastName, documentType, documentNumber, email } =
+    req.body;
   console.log(req.body);
-  if (!name || !lastName || !documentType || !documentNumber) {
+  if (!name || !workArea || !lastName || !documentType || !documentNumber) {
     res.status(400).json({ message: "Faltan datos" });
     return;
   }
 
   try {
     const user = await User.findByPk(id);
+    console.log(user?.name, user?.lastName);
     if (!user) {
       res.status(404).json({ message: "Usuario no encontrado" });
       return;
     }
 
+    const existingWorkArea = await WorkArea.findOne({
+      where: { name: workArea },
+    });
+    console.log(existingWorkArea?.name);
+    const workAreaId = existingWorkArea?.id;
+
     await User.update(
-      { name, lastName, documentType, documentNumber, email },
+      { name, workAreaId, lastName, documentType, documentNumber, email },
       { where: { id } }
     );
 
-    res.status(200).json({ message: "Usuario actualizado" });
+    res.status(200).json({ message: "Los datos del usuario se han actualizado correctamente" });
+    return;
   } catch (error) {
     res.status(500).json({ message: "Error al actualizar el usuario" });
+    return;
   }
 };
 
@@ -181,7 +250,9 @@ export const changeUserStatus = async (req: Request, res: Response) => {
 };
 
 // This function converts a User model instance to a UserResponseDTO
-const toUserResponseDTO = (user: User): UserResponseDTO => {
+const toUserResponseDTO = (
+  user: User & { workArea?: WorkArea }
+): UserResponseDTO => {
   return {
     id: user.id,
     name: user.name,
@@ -191,5 +262,6 @@ const toUserResponseDTO = (user: User): UserResponseDTO => {
     role: user.role,
     email: user.email,
     active: user.active,
+    workArea: user.workArea?.name || "",
   };
 };

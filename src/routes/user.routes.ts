@@ -4,6 +4,7 @@ import {
   createUser,
   getActiveUsers,
   getInactiveUsers,
+  getUser,
   updateUser,
 } from "../controllers/user.controller";
 import { verifyToken } from "../middlewares/auth.middleware";
@@ -11,6 +12,7 @@ import { verifyToken } from "../middlewares/auth.middleware";
 const router = Router();
 
 router.post("/", verifyToken, createUser);
+router.get("/:email", verifyToken, getUser);
 router.get("/active", verifyToken, getActiveUsers);
 router.get("/inactive", verifyToken, getInactiveUsers);
 router.put("/:id", verifyToken, updateUser);

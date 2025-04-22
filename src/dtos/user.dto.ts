@@ -7,4 +7,5 @@ export interface UserResponseDTO {
   role: string;
   email: string;
   active: boolean;
+  workArea: string;
 }
