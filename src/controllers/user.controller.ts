@@ -9,6 +9,7 @@ export const getUser = async (req: Request, res: Response) => {
 
   if (!email) {
     res.status(400).json({ message: "Faltan datos" });
+    return;
   }
   try {
     const user = (await User.findOne({
@@ -26,6 +27,7 @@ export const getUser = async (req: Request, res: Response) => {
       res
         .status(404)
         .json({ message: "No se encontro ningun usuario con este correo" });
+      return;
     }
 
     res.status(200).json({
@@ -41,7 +43,8 @@ export const getUser = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: error });
+    res.status(500).json({ message: "Error al obtener el usuario " });
+    return;
   }
 };
 
@@ -106,7 +109,7 @@ export const createUser = async (req: Request, res: Response) => {
     });
 
     res.status(201).json({
-      message: "Usuario creado",
+      message: "El usuario se ha creado correctamente",
       user: {
         id: user.id,
         name: user.name,
@@ -138,11 +141,6 @@ export const getActiveUsers = async (req: Request, res: Response) => {
         },
       ],
     })) as (User & { workArea: WorkArea })[];
-    if (users.length === 0) {
-      res.status(404).json({ message: "No hay usuarios activos" });
-      return;
-    }
-
     const response: UserResponseDTO[] = users.map((user) =>
       toUserResponseDTO(user)
     );
@@ -167,11 +165,6 @@ export const getInactiveUsers = async (req: Request, res: Response) => {
         },
       ],
     })) as (User & { workArea: WorkArea })[];
-
-    if (users.length === 0) {
-      res.status(404).json({ message: "No hay usuarios inactivos" });
-      return;
-    }
 
     const response: UserResponseDTO[] = users.map((user) =>
       toUserResponseDTO(user)
@@ -214,7 +207,11 @@ export const updateUser = async (req: Request, res: Response) => {
       { where: { id } }
     );
 
-    res.status(200).json({ message: "Los datos del usuario se han actualizado correctamente" });
+    res
+      .status(200)
+      .json({
+        message: "Los datos del usuario se han actualizado correctamente",
+      });
     return;
   } catch (error) {
     res.status(500).json({ message: "Error al actualizar el usuario" });

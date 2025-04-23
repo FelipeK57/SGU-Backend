@@ -17,7 +17,7 @@ export const login = async (req: Request, res: Response) => {
     return;
   }
 
-  const user = await User.findOne({ where: { email } });
+  const user = await User.findOne({ where: { email, role: "admin" } });
   if (!user) {
     res
       .status(401)
@@ -186,7 +186,9 @@ export const resetPassword = async (req: Request, res: Response) => {
     { where: { email } }
   )
     .then(() => {
-      res.status(200).json({ message: "La contraseña ha sido actualizada correctamente" });
+      res
+        .status(200)
+        .json({ message: "La contraseña ha sido actualizada correctamente" });
       return;
     })
     .catch((error) => {
