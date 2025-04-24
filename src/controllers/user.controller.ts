@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import { UserResponseDTO } from "../dtos/user.dto";
 import WorkArea from "../models/workArea.model";
+import { Op } from "sequelize";
 
 export const getUser = async (req: Request, res: Response) => {
   const { email } = req.params;
@@ -190,16 +191,43 @@ export const updateUser = async (req: Request, res: Response) => {
 
   try {
     const user = await User.findByPk(id);
-    console.log(user?.name, user?.lastName);
     if (!user) {
       res.status(404).json({ message: "Usuario no encontrado" });
       return;
     }
 
+    const userWithSameDocument = await User.findOne({
+      where: {
+        documentType,
+        documentNumber,
+        id: { [Op.ne]: id },
+      },
+    });
+
+    if (userWithSameDocument) {
+      res
+        .status(400)
+        .json({ message: "Ya existe un usuario con ese documento" });
+      return;
+    }
+
+    if (email) {
+      const userWithSameEmail = await User.findOne({
+        where: {
+          email,
+          id: { [Op.ne]: id },
+        },
+      });
+
+      if (userWithSameEmail) {
+        res.status(400).json({ message: "Ya existe un usuario con ese email" });
+        return;
+      }
+    }
+
     const existingWorkArea = await WorkArea.findOne({
       where: { name: workArea },
     });
-    console.log(existingWorkArea?.name);
     const workAreaId = existingWorkArea?.id;
 
     await User.update(
@@ -207,16 +235,42 @@ export const updateUser = async (req: Request, res: Response) => {
       { where: { id } }
     );
 
-    res
-      .status(200)
-      .json({
-        message: "Los datos del usuario se han actualizado correctamente",
-      });
+    res.status(200).json({
+      message: "Los datos del usuario se han actualizado correctamente",
+    });
     return;
   } catch (error) {
     res.status(500).json({ message: "Error al actualizar el usuario" });
     return;
   }
+};
+
+export const transferAdminRole = async (req: Request, res: Response) => {
+  const { email, id, password } = req.body;
+
+  const currentAdmin = await User.findByPk(id);
+
+  if (!currentAdmin) {
+    res.status(404).json({ message: "Usuario no encontrado" });
+    return;
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, currentAdmin.password);
+
+  if (!isPasswordValid) {
+    res.status(401).json({
+      message: "La contraseña ingresada no es igual a la actual",
+    });
+    return;
+  }
+
+  await User.update({ role: "admin" }, { where: { email: email } });
+  await User.update({ role: "employee" }, { where: { id: id } });
+
+  res.status(200).json({
+    message: "El rol de administrador ha sido transferido exitosamente",
+  });
+  return;
 };
 
 export const changeUserStatus = async (req: Request, res: Response) => {
