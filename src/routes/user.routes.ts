@@ -15,9 +15,9 @@ const router = Router();
 router.post("/", verifyToken, createUser);
 router.get("/active", verifyToken, getActiveUsers);
 router.get("/inactive", verifyToken, getInactiveUsers);
+router.post("/transfer_admin_role", verifyToken, transferAdminRole);
 router.get("/:email", verifyToken, getUser);
 router.put("/:id", verifyToken, updateUser);
-router.post("/:id", verifyToken, transferAdminRole);
 router.post("/set_status/:id", verifyToken, changeUserStatus);
 
 export default router;

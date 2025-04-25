@@ -11,6 +11,8 @@ import "../src/models/passwordResetCode.model";
 import userRoutes from "./routes/user.routes";
 import authRoutes from "./routes/auth.routes";
 import workAreaRoutes from "./routes/workArea.routes";
+import externalSystemsRoutes from "./routes/externalSystems.routes";
+import externalSystemRolesRoutes from "./routes/externalSystemRole.routes";
 
 dotenv.config();
 
@@ -33,6 +35,10 @@ app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 // Work Area routes
 app.use("/api/work-areas", workAreaRoutes);
+// External Systems routes
+app.use("/api/external-systems", externalSystemsRoutes);
+// External Systems Roles routes
+app.use("/api/external-systems-roles", externalSystemRolesRoutes);
 
 // Endpoint for testing the connection
 app.get("/", (req, res) => {

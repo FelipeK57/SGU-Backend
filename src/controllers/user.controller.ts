@@ -248,7 +248,7 @@ export const updateUser = async (req: Request, res: Response) => {
 export const transferAdminRole = async (req: Request, res: Response) => {
   const { email, id, password } = req.body;
 
-  const currentAdmin = await User.findByPk(id);
+  const currentAdmin = await User.findOne({ where: { email: email } });
 
   if (!currentAdmin) {
     res.status(404).json({ message: "Usuario no encontrado" });
@@ -264,8 +264,8 @@ export const transferAdminRole = async (req: Request, res: Response) => {
     return;
   }
 
-  await User.update({ role: "admin" }, { where: { email: email } });
-  await User.update({ role: "employee" }, { where: { id: id } });
+  await User.update({ role: "employee" }, { where: { email: email } });
+  await User.update({ role: "admin" }, { where: { id: id } });
 
   res.status(200).json({
     message: "El rol de administrador ha sido transferido exitosamente",
