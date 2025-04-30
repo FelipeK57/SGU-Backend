@@ -13,6 +13,7 @@ import authRoutes from "./routes/auth.routes";
 import workAreaRoutes from "./routes/workArea.routes";
 import externalSystemsRoutes from "./routes/externalSystems.routes";
 import externalSystemRolesRoutes from "./routes/externalSystemRole.routes";
+import externalSystemUserRoutes from "./routes/externalSystemUser.routes";
 
 dotenv.config();
 
@@ -39,6 +40,8 @@ app.use("/api/work-areas", workAreaRoutes);
 app.use("/api/external-systems", externalSystemsRoutes);
 // External Systems Roles routes
 app.use("/api/external-systems-roles", externalSystemRolesRoutes);
+// External Systems Users routes
+app.use("/api/external-system-user", externalSystemUserRoutes)
 
 // Endpoint for testing the connection
 app.get("/", (req, res) => {
