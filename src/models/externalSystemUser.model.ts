@@ -8,7 +8,7 @@ export interface ExternalSystemUserAttributes {
   id?: number;
   userId: number;
   externalSystemId: number;
-  externalRoleId: number;
+  externalRoleId: number | null;
 }
 
 export default class ExternalSystemUser
@@ -41,7 +41,7 @@ ExternalSystemUser.init(
     },
     externalRoleId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: ExternalSystemRole,
         key: "id",

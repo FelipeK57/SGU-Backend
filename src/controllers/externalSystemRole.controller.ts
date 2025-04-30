@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
 import ExternalSystemRole from "../models/externalSystemRole.model";
+import { Op } from "sequelize";
 
 export const createRole = async (req: Request, res: Response) => {
   const { name, externalSystemId } = req.body;
+  console.log("Data", name, externalSystemId);
 
   try {
     const role = await ExternalSystemRole.create({
@@ -10,31 +12,83 @@ export const createRole = async (req: Request, res: Response) => {
       externalSystemId,
     });
 
-    res.status(201).json({ role: role });
+    res
+      .status(201)
+      .json({ message: "El rol del sistema externo se creo correctamente" });
   } catch (error) {
     res.status(500).json({ message: error });
   }
 };
 
-export const getRoles = async (req: Request, res: Response) => {
-  const { externalSystemId } = req.params;
-
+export const deleteRole = async (req: Request, res: Response) => {
+  const { id } = req.params;
   try {
-    const externalSystemRoles = await ExternalSystemRole.findAll({
-      where: { externalSystemId: externalSystemId },
-    });
+    const externalSystemRole = await ExternalSystemRole.findByPk(id);
 
-    if (externalSystemRoles.length === 0) {
+    if (externalSystemRole) {
+      await externalSystemRole.destroy();
       res
         .status(200)
-        .json({ message: "No se encontraron roles en este sistema externo" });
-      return;
-    } else {
-      res.status(200).json({ roles: externalSystemRoles });
+        .json({ message: "Rol de sistema externo eliminado correctamente" });
       return;
     }
   } catch (error) {
-    console.error(error);
+    res.status(500).json({ message: "Error interno del servidor" });
+    return;
+  }
+};
+
+export const editRole = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { name } = req.body;
+  try {
+    if (!name) {
+      res.status(400).json({ message: "Faltan datos" });
+      return;
+    }
+
+    const existingRole = await ExternalSystemRole.findOne({
+      where: {
+        name: {
+          [Op.iLike]: name,
+        },
+      },
+    });
+    if (existingRole) {
+      res
+        .status(400)
+        .json({ message: "Ya existe un área de trabajo con este nombre" });
+      return;
+    }
+
+    const role = await ExternalSystemRole.findByPk(id);
+    if (!role) {
+      res.status(404).json({ message: "Área de trabajo no encontrada" });
+      return;
+    }
+
+    role.name = name;
+    await role.save();
+
+    res.status(200).json({
+      message: "El rol del sistema externo ha sido actualizado correctamente"
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error interno del servidor" });
+    return;
+  }
+};
+
+export const getRoles = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const externalSystemRoles = await ExternalSystemRole.findAll({
+      where: { externalSystemId: id },
+    });
+    const roles = externalSystemRoles.map((role) => role.dataValues);
+
+    res.status(200).json({ roles });
+  } catch (error) {
     res.status(500).json({ message: "Error interno del servidor" });
     return;
   }
