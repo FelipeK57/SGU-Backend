@@ -3,7 +3,6 @@ import ExternalSystemUser from "../models/externalSystemUser.model";
 
 export const updateRole = async (req: Request, res: Response) => {
   const { externalSystemId, userId, roleId } = req.body;
-  console.log("Datos: ", externalSystemId, userId, roleId);
   try {
     const user = await ExternalSystemUser.findOne({
       where: {
