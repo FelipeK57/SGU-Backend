@@ -46,7 +46,7 @@ ExternalSystemUser.init(
         model: ExternalSystemRole,
         key: "id",
       },
-      onDelete: "SET NULL",
+      onDelete: "RESTRICT",
       onUpdate: "CASCADE",
     },
   },
