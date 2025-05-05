@@ -4,6 +4,10 @@ import { Request, Response } from "express";
 import { UserResponseDTO } from "../dtos/user.dto";
 import WorkArea from "../models/workArea.model";
 import { Op } from "sequelize";
+import ExternalSystem from "../models/externalSystems.model";
+import { sequelize } from "../config/db";
+import ExternalSystemRole from "../models/externalSystemRole.model";
+import ExternalSystemUser from "../models/externalSystemUser.model";
 
 export const getUser = async (req: Request, res: Response) => {
   const { email } = req.params;
@@ -75,6 +79,8 @@ export const createUser = async (req: Request, res: Response) => {
     return;
   }
 
+  const transaction = await sequelize.transaction();
+
   try {
     const existingByEmail = await User.findOne({ where: { email } });
     if (existingByEmail) {
@@ -109,6 +115,28 @@ export const createUser = async (req: Request, res: Response) => {
       active: true,
     });
 
+    const externalSystems = await ExternalSystem.findAll({ transaction });
+
+    if (externalSystems.length > 0) {
+      for (const system of externalSystems) {
+        const defaultRole = await ExternalSystemRole.findOne({
+          where: { externalSystemId: system.id, name: "Sin rol" },
+          transaction,
+        });
+
+        await ExternalSystemUser.create(
+          {
+            userId: user.id,
+            externalSystemId: system.id,
+            externalRoleId: defaultRole?.id,
+          },
+          { transaction }
+        );
+      }
+    }
+
+    await transaction.commit();
+
     res.status(201).json({
       message: "El usuario se ha creado correctamente",
       user: {
@@ -125,6 +153,7 @@ export const createUser = async (req: Request, res: Response) => {
     });
     return;
   } catch (error) {
+    await transaction.rollback();
     res.status(500).json({ message: "Error al crear el usuario" });
     return;
   }
@@ -183,7 +212,6 @@ export const updateUser = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name, workArea, lastName, documentType, documentNumber, email } =
     req.body;
-  console.log(req.body);
   if (!name || !workArea || !lastName || !documentType || !documentNumber) {
     res.status(400).json({ message: "Faltan datos" });
     return;

@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import ExternalSystemRole from "../models/externalSystemRole.model";
 import { Op } from "sequelize";
+import ExternalSystemUser from "../models/externalSystemUser.model";
 
 export const createRole = async (req: Request, res: Response) => {
   const { name, externalSystemId } = req.body;
-  console.log("Data", name, externalSystemId);
 
   try {
     const role = await ExternalSystemRole.create({
@@ -24,6 +24,18 @@ export const deleteRole = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
     const externalSystemRole = await ExternalSystemRole.findByPk(id);
+
+    const externalUsers = await ExternalSystemUser.findAll({
+      where: { externalRoleId: id },
+    });
+
+    if (externalUsers.length > 0) {
+      res.status(400).json({
+        message:
+          "Este rol no se puede eliminar porqué tiene usuarios asignados",
+      });
+      return;
+    }
 
     if (externalSystemRole) {
       await externalSystemRole.destroy();
@@ -71,7 +83,7 @@ export const editRole = async (req: Request, res: Response) => {
     await role.save();
 
     res.status(200).json({
-      message: "El rol del sistema externo ha sido actualizado correctamente"
+      message: "El rol del sistema externo ha sido actualizado correctamente",
     });
   } catch (error) {
     res.status(500).json({ message: "Error interno del servidor" });
