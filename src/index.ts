@@ -14,6 +14,8 @@ import workAreaRoutes from "./routes/workArea.routes";
 import externalSystemsRoutes from "./routes/externalSystems.routes";
 import externalSystemRolesRoutes from "./routes/externalSystemRole.routes";
 import externalSystemUserRoutes from "./routes/externalSystemUser.routes";
+import adminRoutes from "./routes/admin.routes";
+import apiExternalSystems from "./routes/apiExternalSystems.routes";
 
 dotenv.config();
 
@@ -23,7 +25,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware to allow CORS
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5174", "http://localhost:5173"],
     credentials: true,
   })
 );
@@ -41,7 +43,11 @@ app.use("/api/external-systems", externalSystemsRoutes);
 // External Systems Roles routes
 app.use("/api/external-systems-roles", externalSystemRolesRoutes);
 // External Systems Users routes
-app.use("/api/external-system-user", externalSystemUserRoutes)
+app.use("/api/external-system-user", externalSystemUserRoutes);
+// Additional routes can be added here as needed
+app.use("/api", adminRoutes);
+// API external systems auth
+app.use("/api/external-systems-auth", apiExternalSystems);
 
 // Endpoint for testing the connection
 app.get("/", (req, res) => {

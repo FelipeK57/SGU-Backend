@@ -10,9 +10,9 @@ import "../models/externalSystemUser.model";
 const syncDatabase = async () => {
   try {
     await sequelize.sync({ force: true });
-    console.log("✅ Tablas sincronizadas correctamente.");
+    console.log("✅ tables were synchronized correctly.");
   } catch (error) {
-    console.error("❌ Error al sincronizar la base de datos:", error);
+    console.error("❌ error in database synchronization:", error);
   }
 };
 
