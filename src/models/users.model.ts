@@ -1,8 +1,10 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../config/db";
+import WorkArea from "./workArea.model";
 
 export interface UserAttributes {
   id?: number;
+  workAreaId: number;
   name: string;
   lastName: string;
   documentType: string;
@@ -15,8 +17,12 @@ export interface UserAttributes {
   updatedAt?: Date;
 }
 
-export default class User extends Model<UserAttributes> implements UserAttributes {
+export default class User
+  extends Model<UserAttributes>
+  implements UserAttributes
+{
   public id!: number;
+  public workAreaId!: number;
   public name!: string;
   public lastName!: string;
   public documentType!: string;
@@ -37,6 +43,16 @@ User.init(
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
+    },
+    workAreaId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: WorkArea,
+        key: "id",
+      },
+      onUpdate: "CASCADE",
+      onDelete: "CASCADE",
     },
     name: {
       type: DataTypes.STRING,
@@ -62,6 +78,9 @@ User.init(
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
+      validate: {
+        isEmail: true,
+      },
     },
     password: {
       type: DataTypes.STRING,
