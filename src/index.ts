@@ -25,7 +25,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware to allow CORS
 app.use(
   cors({
-    origin: [process.env.ORIGIN_ALLOWED as string, "http://localhost:5173"],
+    origin: [process.env.ORIGIN_ALLOWED as string, "https://sgi-semcon.vercel.app/", "http://localhost:5173"],
     credentials: true,
   })
 );
