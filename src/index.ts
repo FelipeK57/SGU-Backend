@@ -24,6 +24,11 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware to allow CORS
 app.use(cors({}));
+// app.use(cors({
+//   origin: ["https://sgi-semcon.vercel.app", "https://sgu-semcon.vercel.app"],
+//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//   allowedHeaders: ["Content-Type", "Authorization"]
+// }));
 
 app.use(express.json());
 
