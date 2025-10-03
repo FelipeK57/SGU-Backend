@@ -1,6 +1,6 @@
 import User from "../models/users.model";
 import bcrypt from "bcrypt";
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import { UserResponseDTO } from "../dtos/user.dto";
 import WorkArea from "../models/workArea.model";
 import { Op } from "sequelize";
@@ -49,6 +49,27 @@ export const getUser = async (req: Request, res: Response) => {
     });
   } catch (error) {
     res.status(500).json({ message: "Error al obtener el usuario " });
+    return;
+  }
+};
+
+export const getUserById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ message: "Faltan datos" });
+      return;
+    }
+    const user = await User.findByPk(id, {
+      attributes: ["id", "name", "lastName", "email"],
+    });
+    if (!user) {
+      res.status(404).json({ message: "Usuario no encontrado" });
+      return;
+    }
+    res.status(200).json({ user });
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener el usuario" });
     return;
   }
 };
@@ -176,6 +197,20 @@ export const getActiveUsers = async (req: Request, res: Response) => {
     );
 
     res.status(200).json({ message: "Usuarios activos", users: response });
+    return;
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener los usuarios" });
+    return;
+  }
+};
+
+export const getAllActiveUsers = async (req: Request, res: Response) => {
+  try {
+    const users = await User.findAll({
+      where: { active: true },
+      attributes: ["id", "name", "lastName", "email"],
+    });
+    res.status(200).json({ message: "Usuarios activos", users: users });
     return;
   } catch (error) {
     res.status(500).json({ message: "Error al obtener los usuarios" });
