@@ -87,6 +87,7 @@ export const loginExternalSystem = async (req: Request, res: Response) => {
     res.status(200).json({
       message: "Login exitoso",
       user: {
+        id: user.id,
         name: user.name,
         lastName: user.lastName,
         email: user.email,
