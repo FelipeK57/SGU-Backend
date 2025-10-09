@@ -22,7 +22,7 @@ services:
       - ORIGIN_ALLOWED=https://sgu-semcon.vercel.app/
     volumes:
       - /app/node_modules
-    command: sh -c "npm run sync && npm start"
+    command: sh -c "/app/wait-for-db.sh"
     extra_hosts:
       - "host.docker.internal:host-gateway"
   db:
