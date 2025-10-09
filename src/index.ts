@@ -3,9 +3,9 @@ import { testConnection } from "./config/db";
 import dotenv from "dotenv";
 import cors from "cors";
 
-import "../src/models/workArea.model";
-import "../src/models/users.model";
-import "../src/models/passwordResetCode.model";
+import "./models/workArea.model";
+import "./models/users.model";
+import "./models/passwordResetCode.model";
 
 // import routes
 import userRoutes from "./routes/user.routes";
@@ -56,6 +56,6 @@ app.get("/", (req, res) => {
 // Test the connection
 testConnection().then(() => {
   app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+    console.log(`Servidor corriendo en http://0.0.0.0:${PORT}`);
   });
 });

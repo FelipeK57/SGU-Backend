@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sgu-backend
+    ports:
+      - "3001:3001"
+    depends_on:
+      - db
+    environment:
+      - PORT=3001
+      - DATABASE_URL=postgresql://sgu_user:password@db:5432/sgu
+      - DB_PASSWORD=password
+      - DB_NAME=sgu
+      - JWT_SECRET=SEMCONSECRETKEY20250409
+      - GMAIL_USER=sgu.semcon.notificaciones@gmail.com
+      - DB_SSL=false
+      - GMAIL_PASS=lray hltz xdra khml
+      - ORIGIN_ALLOWED=https://sgu-semcon.vercel.app/
+    volumes:
+      - ./app/node_modules
+    command: sh -c "npm run sync && npm start"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  db:
+    image: postgres:15
+    container_name: sgu-db
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_USER=sgu_user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=sgu
+    volumes:
+      - sgu-db-data:/var/lib/postgresql/data
+
+volumes:
+  sgu-db-data:
