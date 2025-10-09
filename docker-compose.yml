@@ -21,7 +21,7 @@ services:
       - GMAIL_PASS=lray hltz xdra khml
       - ORIGIN_ALLOWED=https://sgu-semcon.vercel.app/
     volumes:
-      - ./app/node_modules
+      - /app/node_modules
     command: sh -c "npm run sync && npm start"
     extra_hosts:
       - "host.docker.internal:host-gateway"
