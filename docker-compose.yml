@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sgu-backend
+    ports:
+      - "3001:3001"
+    depends_on:
+      - db
+    env_file:
+      - .env.production
+    volumes:
+      - /app/node_modules
+    command: sh -c "/app/wait-for-db.sh"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  db:
+    image: postgres:15
+    container_name: sgu-db
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_USER=sgu_user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=sgu
+    volumes:
+      - sgu-db-data:/var/lib/postgresql/data
+
+volumes:
+  sgu-db-data:
