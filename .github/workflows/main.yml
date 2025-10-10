@@ -21,7 +21,7 @@ jobs:
           password: ${{ secrets.VPS_PASS }}
           port: 22
           script: |
-            cd /SGU-Backend
+            cd /root/SGU-Backend
             git pull origin
             docker-compose pull
             docker-compose up -d
