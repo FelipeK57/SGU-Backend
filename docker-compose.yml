@@ -12,16 +12,6 @@ services:
       - db
     env_file:
       - .env.production
-    # environment:
-    #   - PORT=3001
-    #   - DATABASE_URL=postgresql://sgu_user:password@db:5432/sgu
-    #   - DB_PASSWORD=password
-    #   - DB_NAME=sgu
-    #   - JWT_SECRET=SEMCONSECRETKEY20250409
-    #   - GMAIL_USER=sgu.semcon.notificaciones@gmail.com
-    #   - DB_SSL=false
-    #   - GMAIL_PASS=lray hltz xdra khml
-    #   - ORIGIN_ALLOWED=https://sgu-semcon.vercel.app/
     volumes:
       - /app/node_modules
     command: sh -c "/app/wait-for-db.sh"
