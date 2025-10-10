@@ -3,7 +3,7 @@ name: CI/CD Backend
 on:
   push:
     branches:
-      - main
+      - test/vps-deploy
 
 jobs:
   build-and-deploy:
