@@ -94,7 +94,7 @@ export const getExternalSystemUsers = async (req: Request, res: Response) => {
       include: [
         {
           model: ExternalSystem,
-          attributes: ["name"],
+          attributes: ["name", "url"],
         },
         {
           model: User,
@@ -144,6 +144,37 @@ export const deleteExternalSystem = async (req: Request, res: Response) => {
     }
   } catch (error) {
     res.status(500).json({ message: "Error al eliminar el sistema externo" });
+    return;
+  }
+};
+
+export const updateExternalSystem = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { name, url } = req.body;
+
+  if (!name || !url) {
+    res.status(404).json({ message: "Faltan datos" });
+    return;
+  }
+
+  try {
+    const externalSystem = await ExternalSystem.findByPk(id);
+    if (externalSystem) {
+      externalSystem.name = name;
+      externalSystem.url = url;
+      await externalSystem.save();
+      res
+        .status(200)
+        .json({
+          message: "El sistema externo se ha actualizado correctamente",
+        });
+      return;
+    } else {
+      res.status(404).json({ message: "No se encontró el sistema externo" });
+      return;
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Error actualizando el sistema externo" });
     return;
   }
 };

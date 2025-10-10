@@ -20,7 +20,7 @@ router.get("/all_active", getAllActiveUsers);
 router.get("/inactive", verifyToken, getInactiveUsers);
 router.post("/transfer_admin_role", verifyToken, transferAdminRole);
 router.get("/:id", getUserById);
-router.get("/:email", verifyToken, getUser);
+router.get("/email/:email", verifyToken, getUser);
 router.put("/:id", verifyToken, updateUser);
 router.post("/set_status/:id", verifyToken, changeUserStatus);
 
